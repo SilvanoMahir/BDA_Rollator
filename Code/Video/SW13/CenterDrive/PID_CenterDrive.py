@@ -7,7 +7,7 @@ Ki = 0.05
 Kd = 0.2
 Ti = 1
 Td = 1
-Kp_Center = 0.5
+Kp_Center = 1000
 
 detectLeft = None
 detectRight = None
@@ -46,6 +46,8 @@ def PID(angle, beta, d):
     #calculation for output
     value = (pValue + iValue + dValue)/180
 
+    print 'Value PID:', value
+
 
     #Mittellinie Anpassungen
     if angle > 0 and abs(angle)< 85:  #Motoren sollen rechts drehen
@@ -59,38 +61,35 @@ def PID(angle, beta, d):
         detectRight = None
         
     error = np.median(beta*np.pi/180) #abs(0-beta)  = immer beta
+    print 'error:', error
     d = np.median(d)
 
-    if d >= 0 and detectLeft == True:      #Mittellinie links und Kurve links   
+    if d >= 0 and detectLeft == True:      #Mittellinie rechts und Kurve links   
         value += Kp_Center * error  
-    elif d < 0 and detectRight == True:     #Mittellinie ist rechts und Kurve rechts
+    elif d < 0 and detectRight == True:     #Mittellinie links und Kurve rechts
         value += Kp_Center * error 
-    elif d >= 0 and detectRight == True:    #Mittellinie ist links und Kurve rechts  
-        value += Kp_Center * error   
-    elif d < 0 and detectLeft == True:     #Mittellinie ist rechts und Kurve links
-        value += Kp_Center * error 
+    elif d >= 0 and detectRight == True:    #Mittellinie rechts und Kurve rechts  
+        value -= Kp_Center * error   
+    elif d < 0 and detectLeft == True:     #Mittellinie links und Kurve links
+        value -= Kp_Center * error 
     elif detectLeft == None and detectRight == None and d < 0:  #Mittellinie ist rechts
-        value = Kp_Center * error 
-    elif detectLeft == None and detectRight == None and d >= 0: #Mittellinie ist links
         value += Kp_Center * error 
+    elif detectLeft == None and detectRight == None and d >= 0: #Mittellinie ist links
+        value += Kp_Center * error
 
-    print 'Value PID:', value
-##    print 'Beta:', beta
-    print 'Abstand zum Mittellinie:', d
+    print 'Value PID + P:', value
 
     #Saturation 
     if value > 40:
         value = 40           
     elif value < 0:
-        value = 20
+        value = 10
+
+    print 'Value:', value
+##    print 'Beta:', beta
+    print 'Abstand d:', d
 
 
     
 
     return value
-
-##while True:
-##    value = PID(80)
-##    time.sleep(0.5)
-##    print(value)
-##    print('--------------------------------')
